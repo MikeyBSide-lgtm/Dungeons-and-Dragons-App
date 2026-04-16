@@ -5,21 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Grimoire — D&D Character Sheet</title>
 
-<!-- PWA / Home Screen -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Grimoire">
 <meta name="theme-color" content="#141110">
 <meta name="mobile-web-app-capable" content="yes">
 
-<!-- App Icon (inline SVG as data URI) -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23141110'/%3E%3Ctext x='90' y='105' text-anchor='middle' font-family='serif' font-size='80' fill='%23c9a84c'%3EG%3C/text%3E%3Crect x='20' y='140' width='140' height='2' fill='%233a332c'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23141110'/%3E%3Ctext x='90' y='118' text-anchor='middle' font-family='serif' font-size='100' fill='%23c9a84c'%3EG%3C/text%3E%3Crect x='30' y='140' width='120' height='2' fill='%233a332c'/%3E%3C/svg%3E">
 
-<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
 
-<!-- React from CDN -->
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.9/babel.min.js"></script>
@@ -63,68 +59,293 @@ body { background: #141110; }
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
+
+.roster-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at top, rgba(201, 168, 76, 0.08), transparent 60%),
+    radial-gradient(ellipse at bottom, rgba(139, 118, 53, 0.04), transparent 70%),
+    var(--bg-deep);
+  pointer-events: none;
+}
+.roster-bg::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cpath d='M0 50 L100 50 M50 0 L50 100' stroke='%233a332c' stroke-width='0.3' opacity='0.3'/%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  opacity: 0.4;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+.roster-wrap {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 24px 24px;
+  padding-top: calc(40px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.roster-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  letter-spacing: 8px;
+  color: var(--gold);
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 20px rgba(201, 168, 76, 0.2);
+}
+.roster-flourish {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.roster-flourish-line {
+  height: 1px; width: 60px;
+  background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+}
+.roster-flourish svg { color: var(--gold-dim); }
+.roster-subtitle {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--cream-dim);
+  text-align: center;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+}
+.roster-section-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.char-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto 32px;
+  width: 100%;
+}
+.char-card {
+  background: linear-gradient(135deg, var(--bg-card), #1a1714);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all .25s;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.char-card:hover, .char-card:active {
+  border-color: var(--gold-dim);
+  transform: translateY(-1px);
+}
+.char-card-sigil {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  border: 1px solid var(--gold-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.char-card-info { flex: 1; min-width: 0; }
+.char-card-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--cream);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.char-card-sub {
+  font-size: 13px;
+  color: var(--cream-dim);
+  font-style: italic;
+}
+.char-card-actions {
+  display: flex; gap: 8px;
+  flex-shrink: 0;
+}
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--cream-dim);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.icon-btn:hover, .icon-btn:active { color: var(--gold); border-color: var(--gold-dim); }
+.icon-btn.danger:hover, .icon-btn.danger:active { color: var(--red); border-color: var(--red-dim); }
+.roster-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--cream-dim);
+  font-style: italic;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  max-width: 520px;
+  margin: 0 auto 32px;
+}
+.roster-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+}
+.action-btn {
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+  border: 1px solid var(--gold);
+  background: linear-gradient(180deg, var(--gold), #b89535);
+  color: var(--bg-deep);
+  font-weight: 600;
+}
+.action-btn.secondary {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  font-weight: 400;
+}
+.action-btn:active { transform: scale(0.98); }
+
 .app-header {
-  padding: 16px 20px 12px;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding: 12px 16px 12px;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, #1e1a17 0%, var(--bg-deep) 100%);
   flex-shrink: 0;
   z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-back {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.header-center {
+  flex: 1; min-width: 0;
+  text-align: center;
 }
 .app-title {
   font-family: var(--font-display);
-  font-size: 13px;
-  letter-spacing: 3px;
+  font-size: 12px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   color: var(--gold);
-  text-align: center;
 }
 .char-header-name {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 17px;
   color: var(--cream);
-  text-align: center;
-  margin-top: 4px;
+  margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .char-header-sub {
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--cream-dim);
-  text-align: center;
   font-style: italic;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.save-status {
+  color: var(--green);
+  font-size: 10px;
+  margin-left: 6px;
+  letter-spacing: 0;
+  font-family: var(--font-body);
+}
+
 .content-area {
   flex: 1;
   padding: 16px 20px 16px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+
 .tab-bar {
   flex-shrink: 0;
   display: flex;
-  background: #1a1613;
+  background: linear-gradient(180deg, #1a1613, #141110);
   border-top: 1px solid var(--border);
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  position: relative;
+}
+.tab-bar::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+  opacity: 0.4;
 }
 .tab-btn {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 2px 10px;
+  gap: 4px;
+  padding: 9px 2px 8px;
   border: none;
   background: transparent;
   color: var(--cream-dim);
   cursor: pointer;
   transition: color .2s;
-  font-family: var(--font-body);
-  font-size: 11px;
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
+.tab-btn svg { color: var(--cream-dim); transition: color .2s; }
 .tab-btn.active { color: var(--gold); }
-.tab-btn .tab-icon { font-size: 20px; }
+.tab-btn.active svg { color: var(--gold); }
+.tab-btn.active::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 25%; right: 25%;
+  height: 1.5px;
+  background: var(--gold);
+  border-radius: 0 0 2px 2px;
+}
+
 .section-title {
   font-family: var(--font-display);
   font-size: 16px;
@@ -143,6 +364,7 @@ body { background: #141110; }
   padding: 16px;
   margin-bottom: 16px;
 }
+
 .field-group {
   display: flex;
   flex-direction: column;
@@ -184,6 +406,7 @@ body { background: #141110; }
 .field-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
 .row { display: flex; gap: 12px; }
 .row > * { flex: 1; min-width: 0; }
+
 .ability-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -227,13 +450,14 @@ body { background: #141110; }
   -webkit-appearance: none;
 }
 .ability-score-input:focus { border-color: var(--gold-dim); }
-.save-row {
+
+.save-row, .skill-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
 }
-.save-row:last-child { border-bottom: none; }
-.save-left { display: flex; align-items: center; gap: 10px; }
+.save-row:last-child, .skill-row:last-child { border-bottom: none; }
+.save-left, .skill-left { display: flex; align-items: center; gap: 10px; }
 .check-btn {
   width: 28px; height: 28px;
   border-radius: 50%;
@@ -253,13 +477,6 @@ body { background: #141110; }
 }
 .save-name { font-size: 15px; color: var(--cream); }
 .save-mod { font-family: var(--font-display); font-size: 15px; color: var(--gold); }
-.skill-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--border);
-}
-.skill-row:last-child { border-bottom: none; }
-.skill-left { display: flex; align-items: center; gap: 8px; }
 .skill-pip {
   width: 26px; height: 26px;
   border-radius: 50%;
@@ -267,7 +484,7 @@ body { background: #141110; }
   background: transparent;
   cursor: pointer;
   transition: all .2s;
-  font-size: 10px;
+  font-size: 11px;
   display: flex; align-items: center; justify-content: center;
   color: transparent;
   -webkit-tap-highlight-color: transparent;
@@ -277,6 +494,7 @@ body { background: #141110; }
 .skill-name { font-size: 15px; }
 .skill-ability { font-size: 12px; color: var(--cream-dim); margin-left: 4px; }
 .skill-mod { font-family: var(--font-display); font-size: 15px; color: var(--gold); min-width: 30px; text-align: right; }
+
 .hp-bar-track {
   width: 100%; height: 14px;
   background: var(--bg-input);
@@ -368,6 +586,7 @@ body { background: #141110; }
 }
 .death-pip.success-on { border-color: var(--green); background: var(--green); }
 .death-pip.failure-on { border-color: var(--red); background: var(--red); }
+
 .add-btn {
   width: 100%;
   padding: 14px;
@@ -467,9 +686,10 @@ body { background: #141110; }
 .spell-level { font-size: 12px; color: var(--cream-dim); }
 .spell-meta { font-size: 12px; color: var(--cream-dim); margin-top: 4px; font-style: italic; }
 .spell-desc { font-size: 14px; line-height: 1.5; color: var(--cream-dim); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+
 .modal-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.78);
   z-index: 200;
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
@@ -491,7 +711,8 @@ body { background: #141110; }
   color: var(--gold);
   margin-bottom: 16px;
   text-align: center;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .btn {
@@ -509,6 +730,8 @@ body { background: #141110; }
   -webkit-tap-highlight-color: transparent;
 }
 .btn.primary { background: var(--gold); color: var(--bg-deep); border-color: var(--gold); font-weight: 600; }
+.btn.danger { border-color: var(--red-dim); color: var(--red); }
+.modal-text { color: var(--cream-dim); font-size: 14px; line-height: 1.5; text-align: center; margin-bottom: 8px; }
 .prof-bonus-badge {
   display: inline-block;
   background: var(--bg-input);
@@ -544,9 +767,10 @@ body { background: #141110; }
 
 @media (max-width: 500px) {
   .ability-grid { grid-template-columns: repeat(2, 1fr); }
+  .roster-title { font-size: 28px; letter-spacing: 6px; }
+  .tab-btn { font-size: 8px; letter-spacing: 1px; }
 }
 
-/* Prevent iOS zoom on input focus */
 @supports (-webkit-touch-callout: none) {
   .field-input, .field-select, .field-textarea,
   .ability-score-input, .hp-amount-input,
@@ -560,9 +784,90 @@ body { background: #141110; }
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useEffect, useCallback } = React;
+const { useState, useEffect, useCallback, useRef } = React;
 
-/* ─── Data Constants ─────────────────────────── */
+const Icon = {
+  Scroll: ({ size = 22 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 4h11a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V4z"/>
+      <path d="M5 4a3 3 0 0 0-3 3v1h3"/>
+      <path d="M19 20a3 3 0 0 0 3-3v-1h-3"/>
+      <path d="M9 9h6M9 12h6M9 15h4"/>
+    </svg>
+  ),
+  Sword: ({ size = 22 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 17.5L3 6V3h3l11.5 11.5"/>
+      <path d="M13 19l6-6"/>
+      <path d="M16 16l4 4"/>
+      <path d="M19 21l2-2"/>
+    </svg>
+  ),
+  Target: ({ size = 22 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <circle cx="12" cy="12" r="5.5"/>
+      <circle cx="12" cy="12" r="2"/>
+    </svg>
+  ),
+  Shield: ({ size = 22 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3z"/>
+      <path d="M12 8v6M9 11h6"/>
+    </svg>
+  ),
+  Star: ({ size = 22 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l2.4 5.4 5.6.6-4.2 4 1.2 5.8L12 16l-5 2.8 1.2-5.8L4 9l5.6-.6L12 3z"/>
+    </svg>
+  ),
+  Pouch: ({ size = 22 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9c0-1 1-2 2-2h8c1 0 2 1 2 2l1.5 9c.2 1.2-.7 2-1.7 2H6.2c-1 0-1.9-.8-1.7-2L6 9z"/>
+      <path d="M9 7V5a3 3 0 0 1 6 0v2"/>
+      <path d="M9 13c.5.5 1.5 1 3 1s2.5-.5 3-1"/>
+    </svg>
+  ),
+  Flame: ({ size = 22 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 1-5 0 0 2 1 2 3 1-2 1-5 2-8z"/>
+      <path d="M12 14c1 1 2 1.5 2 3a2 2 0 0 1-4 0c0-1 1-1.5 2-3z"/>
+    </svg>
+  ),
+  Back: ({ size = 18 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 18l-6-6 6-6"/>
+    </svg>
+  ),
+  Plus: ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+  ),
+  Edit: ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>
+      <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+  ),
+  Copy: ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="11" height="11" rx="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>
+  ),
+  Trash: ({ size = 16 }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    </svg>
+  ),
+  Flourish: ({ size = 14 }) => (
+    <svg width={size * 2} height={size} viewBox="0 0 28 14" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 7c2 0 3-2 5-2s3 4 5 4 3-4 5-4 3 2 5 2"/>
+      <circle cx="14" cy="7" r="0.8" fill="currentColor"/>
+    </svg>
+  ),
+};
 
 const ABILITY_NAMES = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
 const ABILITY_FULL = { STR: "Strength", DEX: "Dexterity", CON: "Constitution", INT: "Intelligence", WIS: "Wisdom", CHA: "Charisma" };
@@ -585,42 +890,103 @@ const ALIGNMENTS = ["Lawful Good","Neutral Good","Chaotic Good","Lawful Neutral"
 const CONDITIONS = ["Blinded","Charmed","Deafened","Frightened","Grappled","Incapacitated","Invisible","Paralyzed","Petrified","Poisoned","Prone","Restrained","Stunned","Unconscious","Exhaustion"];
 
 const TABS = [
-  { id: "overview", icon: "\u{1F464}", label: "Overview" },
-  { id: "abilities", icon: "\u2694\uFE0F", label: "Abilities" },
-  { id: "skills", icon: "\u{1F3AF}", label: "Skills" },
-  { id: "combat", icon: "\u{1F6E1}\uFE0F", label: "Combat" },
-  { id: "features", icon: "\u2728", label: "Features" },
-  { id: "equipment", icon: "\u{1F392}", label: "Gear" },
-  { id: "spells", icon: "\u{1F52E}", label: "Spells" },
+  { id: "overview", icon: Icon.Scroll, label: "Tome" },
+  { id: "abilities", icon: Icon.Sword, label: "Might" },
+  { id: "skills", icon: Icon.Target, label: "Skills" },
+  { id: "combat", icon: Icon.Shield, label: "Combat" },
+  { id: "features", icon: Icon.Star, label: "Traits" },
+  { id: "equipment", icon: Icon.Pouch, label: "Gear" },
+  { id: "spells", icon: Icon.Flame, label: "Spells" },
 ];
 
-/* ─── Helpers ────────────────────────────────── */
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
-const defaultChar = () => ({
+const defaultChar = (id) => ({
+  id: id || newId(),
+  createdAt: Date.now(),
   name: "", race: "", subrace: "", className: "", subclass: "", level: 1,
   background: "", alignment: "", experience: 0,
   abilities: { STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 },
   savingThrows: { STR: false, DEX: false, CON: false, INT: false, WIS: false, CHA: false },
   skills: Object.fromEntries(SKILLS.map(s => [s.name, { proficient: false, expertise: false }])),
   hp: { max: 10, current: 10, temp: 0 },
-  ac: 10, initiative: 0, speed: 30,
+  ac: 10, speed: 30,
   deathSaves: { successes: 0, failures: 0 },
   features: [], equipment: [],
   currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
   notes: "", traits: "", ideals: "", bonds: "", flaws: "",
-  spellcastingAbility: "", spellSaveDC: 0, spellAttackBonus: 0,
+  spellcastingAbility: "", spellSaveDC: 0, spellAttackBonus: "",
   spellSlots: { 1:{max:0,used:0}, 2:{max:0,used:0}, 3:{max:0,used:0}, 4:{max:0,used:0}, 5:{max:0,used:0}, 6:{max:0,used:0}, 7:{max:0,used:0}, 8:{max:0,used:0}, 9:{max:0,used:0} },
   spells: [], conditions: [],
 });
 
-const mod = (score) => Math.floor((score - 10) / 2);
-const modStr = (score) => { const m = mod(score); return m >= 0 ? `+${m}` : `${m}`; };
-const profBonus = (level) => Math.ceil(level / 4) + 1;
+const modCalc = (score) => Math.floor(((Number(score) || 10) - 10) / 2);
+const modStr = (score) => { const m = modCalc(score); return m >= 0 ? `+${m}` : `${m}`; };
+const profBonus = (level) => Math.ceil((Number(level) || 1) / 4) + 1;
 
-const saveChar = (char) => { try { localStorage.setItem("grimoire-char-v1", JSON.stringify(char)); } catch(e) { console.error("Save failed", e); } };
-const loadChar = () => { try { const d = localStorage.getItem("grimoire-char-v1"); return d ? { ...defaultChar(), ...JSON.parse(d) } : null; } catch(e) { return null; } };
+const STORAGE_KEY = "grimoire-roster-v2";
+const LEGACY_KEY = "grimoire-char-v1";
 
-/* ─── Modal Components ───────────────────────── */
+function loadRoster() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      const oldChar = JSON.parse(legacy);
+      const migrated = { ...defaultChar(), ...oldChar, id: newId(), createdAt: Date.now() };
+      const roster = { characters: [migrated] };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(roster));
+      return roster;
+    }
+  } catch (e) { console.error("Load failed", e); }
+  return { characters: [] };
+}
+
+function saveRoster(roster) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(roster)); }
+  catch (e) { console.error("Save failed", e); }
+}
+
+/* NumberInput: stores raw text locally, only commits on blur. Allows fully clearing the field. */
+function NumberInput({ value, onChange, min, max, defaultValue = 0, ...props }) {
+  const [text, setText] = useState(String(value ?? ""));
+  const focusedRef = useRef(false);
+
+  useEffect(() => {
+    if (!focusedRef.current) setText(String(value ?? ""));
+  }, [value]);
+
+  const commit = (raw) => {
+    if (raw === "" || raw === "-") {
+      onChange(min !== undefined ? min : defaultValue);
+      setText(String(min !== undefined ? min : defaultValue));
+      return;
+    }
+    let n = Number(raw);
+    if (!Number.isFinite(n)) { onChange(defaultValue); setText(String(defaultValue)); return; }
+    if (min !== undefined) n = Math.max(min, n);
+    if (max !== undefined) n = Math.min(max, n);
+    onChange(n);
+    setText(String(n));
+  };
+
+  return (
+    <input
+      {...props}
+      type="text"
+      inputMode="numeric"
+      pattern="-?[0-9]*"
+      value={text}
+      onFocus={(e) => { focusedRef.current = true; if (e.target.select) e.target.select(); }}
+      onChange={(e) => {
+        const v = e.target.value;
+        if (v === "" || v === "-" || /^-?\d*$/.test(v)) setText(v);
+      }}
+      onBlur={() => { focusedRef.current = false; commit(text); }}
+    />
+  );
+}
 
 function AddFeatureModal({ onAdd, onClose }) {
   const [name, setName] = useState("");
@@ -635,7 +1001,7 @@ function AddFeatureModal({ onAdd, onClose }) {
         <div className="field-group"><label className="field-label">Description</label><textarea className="field-textarea" value={desc} onChange={e => setDesc(e.target.value)} placeholder="What does it do?" /></div>
         <div className="modal-actions">
           <button className="btn" onClick={onClose}>Cancel</button>
-          <button className="btn primary" onClick={() => { if (name.trim()) { onAdd({ name, source, description: desc, id: Date.now() }); onClose(); } }}>Add</button>
+          <button className="btn primary" onClick={() => { if (name.trim()) { onAdd({ name, source, description: desc, id: newId() }); onClose(); } }}>Add</button>
         </div>
       </div>
     </div>
@@ -652,12 +1018,12 @@ function AddEquipmentModal({ onAdd, onClose }) {
         <div className="modal-title">Add Equipment</div>
         <div className="field-group"><label className="field-label">Item Name</label><input className="field-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Longsword" /></div>
         <div className="row">
-          <div className="field-group"><label className="field-label">Quantity</label><input className="field-input" type="number" value={qty} onChange={e => setQty(Number(e.target.value) || 1)} min="1" /></div>
+          <div className="field-group"><label className="field-label">Quantity</label><NumberInput className="field-input" value={qty} onChange={setQty} min={1} /></div>
           <div className="field-group"><label className="field-label">Notes</label><input className="field-input" value={note} onChange={e => setNote(e.target.value)} placeholder="1d8 slashing, etc." /></div>
         </div>
         <div className="modal-actions">
           <button className="btn" onClick={onClose}>Cancel</button>
-          <button className="btn primary" onClick={() => { if (name.trim()) { onAdd({ name, quantity: qty, note, id: Date.now() }); onClose(); } }}>Add</button>
+          <button className="btn primary" onClick={() => { if (name.trim()) { onAdd({ name, quantity: qty, note, id: newId() }); onClose(); } }}>Add</button>
         </div>
       </div>
     </div>
@@ -686,7 +1052,7 @@ function AddSpellModal({ onAdd, onClose }) {
           <div className="field-group"><label className="field-label">School</label><input className="field-input" value={school} onChange={e => setSchool(e.target.value)} placeholder="Evocation" /></div>
         </div>
         <div className="row">
-          <div className="field-group"><label className="field-label">Casting Time</label><input className="field-input" value={castTime} onChange={e => setCastTime(e.target.value)} /></div>
+          <div className="field-group"><label className="field-label">Cast Time</label><input className="field-input" value={castTime} onChange={e => setCastTime(e.target.value)} /></div>
           <div className="field-group"><label className="field-label">Range</label><input className="field-input" value={range} onChange={e => setRange(e.target.value)} /></div>
         </div>
         <div className="row">
@@ -696,14 +1062,43 @@ function AddSpellModal({ onAdd, onClose }) {
         <div className="field-group"><label className="field-label">Description</label><textarea className="field-textarea" value={desc} onChange={e => setDesc(e.target.value)} /></div>
         <div className="modal-actions">
           <button className="btn" onClick={onClose}>Cancel</button>
-          <button className="btn primary" onClick={() => { if (name.trim()) { onAdd({ name, level, school, castingTime: castTime, range, components, duration, description: desc, id: Date.now() }); onClose(); } }}>Add</button>
+          <button className="btn primary" onClick={() => { if (name.trim()) { onAdd({ name, level, school, castingTime: castTime, range, components, duration, description: desc, id: newId() }); onClose(); } }}>Add</button>
         </div>
       </div>
     </div>
   );
 }
 
-/* ─── Tab Panels ─────────────────────────────── */
+function ConfirmModal({ title, body, confirmLabel = "Confirm", danger = false, onConfirm, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 380 }}>
+        <div className="modal-title">{title}</div>
+        <div className="modal-text">{body}</div>
+        <div className="modal-actions">
+          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className={`btn ${danger ? "danger" : "primary"}`} onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RenameModal({ initial, onSave, onClose }) {
+  const [val, setVal] = useState(initial);
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 380 }}>
+        <div className="modal-title">Rename Character</div>
+        <input className="field-input" value={val} onChange={e => setVal(e.target.value)} autoFocus />
+        <div className="modal-actions">
+          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn primary" onClick={() => { onSave(val); onClose(); }}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function OverviewTab({ c, set }) {
   return (<>
@@ -718,7 +1113,9 @@ function OverviewTab({ c, set }) {
       <div className="row">
         <div className="field-group"><label className="field-label">Class</label>
           <select className="field-select" value={c.className} onChange={e => set("className", e.target.value)}><option value="">Select...</option>{CLASSES.map(cl => <option key={cl}>{cl}</option>)}</select></div>
-        <div className="field-group"><label className="field-label">Level</label><input className="field-input" type="number" value={c.level} onChange={e => set("level", Math.max(1, Math.min(20, Number(e.target.value) || 1)))} min="1" max="20" /></div>
+        <div className="field-group"><label className="field-label">Level</label>
+          <NumberInput className="field-input" value={c.level} onChange={v => set("level", v)} min={1} max={20} defaultValue={1} />
+        </div>
       </div>
       <div className="field-group"><label className="field-label">Subclass</label><input className="field-input" value={c.subclass} onChange={e => set("subclass", e.target.value)} placeholder="e.g. The Genie (Efreeti)" /></div>
       <div className="row">
@@ -726,7 +1123,9 @@ function OverviewTab({ c, set }) {
         <div className="field-group"><label className="field-label">Alignment</label>
           <select className="field-select" value={c.alignment} onChange={e => set("alignment", e.target.value)}><option value="">Select...</option>{ALIGNMENTS.map(a => <option key={a}>{a}</option>)}</select></div>
       </div>
-      <div className="field-group"><label className="field-label">Experience Points</label><input className="field-input" type="number" value={c.experience} onChange={e => set("experience", Number(e.target.value) || 0)} /></div>
+      <div className="field-group"><label className="field-label">Experience Points</label>
+        <NumberInput className="field-input" value={c.experience} onChange={v => set("experience", v)} min={0} defaultValue={0} />
+      </div>
     </div>
     <div className="section-title">Personality</div>
     <div className="card">
@@ -754,8 +1153,7 @@ function AbilitiesTab({ c, set }) {
         <div className="ability-card" key={ab}>
           <div className="ability-name">{ab}</div>
           <div className="ability-mod">{modStr(c.abilities[ab])}</div>
-          <input className="ability-score-input" type="number" value={c.abilities[ab]}
-            onChange={e => set("abilities", { ...c.abilities, [ab]: Math.max(1, Math.min(30, Number(e.target.value) || 1)) })} />
+          <NumberInput className="ability-score-input" value={c.abilities[ab]} onChange={v => set("abilities", { ...c.abilities, [ab]: v })} min={1} max={30} defaultValue={10} />
         </div>
       ))}
     </div>
@@ -763,7 +1161,7 @@ function AbilitiesTab({ c, set }) {
     <div className="section-title">Saving Throws</div>
     <div className="card">
       {ABILITY_NAMES.map(ab => {
-        const bonus = mod(c.abilities[ab]) + (c.savingThrows[ab] ? pb : 0);
+        const bonus = modCalc(c.abilities[ab]) + (c.savingThrows[ab] ? pb : 0);
         return (
           <div className="save-row" key={ab}>
             <div className="save-left">
@@ -787,7 +1185,7 @@ function SkillsTab({ c, set }) {
     <div className="card">
       {SKILLS.map(sk => {
         const s = c.skills[sk.name] || { proficient: false, expertise: false };
-        const bonus = mod(c.abilities[sk.ability]) + (s.expertise ? pb * 2 : s.proficient ? pb : 0);
+        const bonus = modCalc(c.abilities[sk.ability]) + (s.expertise ? pb * 2 : s.proficient ? pb : 0);
         const toggleSkill = () => {
           const newSkills = { ...c.skills };
           if (!s.proficient) newSkills[sk.name] = { proficient: true, expertise: false };
@@ -818,9 +1216,7 @@ function CombatTab({ c, set }) {
   const heal = () => set("hp", { ...c.hp, current: Math.min(c.hp.max, c.hp.current + dmgAmt) });
   const damage = () => set("hp", { ...c.hp, current: Math.max(0, c.hp.current - dmgAmt) });
   const conditions = c.conditions || [];
-  const toggleCondition = (cond) => {
-    set("conditions", conditions.includes(cond) ? conditions.filter(x => x !== cond) : [...conditions, cond]);
-  };
+  const toggleCondition = (cond) => set("conditions", conditions.includes(cond) ? conditions.filter(x => x !== cond) : [...conditions, cond]);
   const toggleDeathSave = (type, idx) => {
     const current = c.deathSaves[type];
     set("deathSaves", { ...c.deathSaves, [type]: current > idx ? idx : idx + 1 });
@@ -829,21 +1225,31 @@ function CombatTab({ c, set }) {
     <div className="section-title">Hit Points</div>
     <div className="card">
       <div className="row">
-        <div className="field-group"><label className="field-label">Max HP</label><input className="field-input" type="number" value={c.hp.max} onChange={e => set("hp", { ...c.hp, max: Number(e.target.value) || 0 })} /></div>
-        <div className="field-group"><label className="field-label">Current</label><input className="field-input" type="number" value={c.hp.current} onChange={e => set("hp", { ...c.hp, current: Number(e.target.value) || 0 })} /></div>
-        <div className="field-group"><label className="field-label">Temp</label><input className="field-input" type="number" value={c.hp.temp} onChange={e => set("hp", { ...c.hp, temp: Number(e.target.value) || 0 })} /></div>
+        <div className="field-group"><label className="field-label">Max HP</label>
+          <NumberInput className="field-input" value={c.hp.max} onChange={v => set("hp", { ...c.hp, max: v })} min={0} defaultValue={0} />
+        </div>
+        <div className="field-group"><label className="field-label">Current</label>
+          <NumberInput className="field-input" value={c.hp.current} onChange={v => set("hp", { ...c.hp, current: v })} defaultValue={0} />
+        </div>
+        <div className="field-group"><label className="field-label">Temp</label>
+          <NumberInput className="field-input" value={c.hp.temp} onChange={v => set("hp", { ...c.hp, temp: v })} min={0} defaultValue={0} />
+        </div>
       </div>
       <div className="hp-bar-track"><div className="hp-bar-fill" style={{ width: `${hpPercent}%`, background: hpColor }} /></div>
       <div className="hp-controls">
         <button className="hp-btn heal" onClick={heal}>+</button>
-        <input className="hp-amount-input" type="number" value={dmgAmt} onChange={e => setDmgAmt(Math.max(1, Number(e.target.value) || 1))} min="1" />
+        <NumberInput className="hp-amount-input" value={dmgAmt} onChange={setDmgAmt} min={1} defaultValue={1} />
         <button className="hp-btn dmg" onClick={damage}>{"\u2212"}</button>
       </div>
     </div>
     <div className="stat-boxes">
-      <div className="stat-box"><div className="stat-box-label">AC</div><input className="stat-box-input" type="number" value={c.ac} onChange={e => set("ac", Number(e.target.value) || 0)} /></div>
+      <div className="stat-box"><div className="stat-box-label">AC</div>
+        <NumberInput className="stat-box-input" value={c.ac} onChange={v => set("ac", v)} min={0} defaultValue={10} />
+      </div>
       <div className="stat-box"><div className="stat-box-label">Initiative</div><div className="stat-box-value">{modStr(c.abilities.DEX)}</div></div>
-      <div className="stat-box"><div className="stat-box-label">Speed</div><input className="stat-box-input" type="number" value={c.speed} onChange={e => set("speed", Number(e.target.value) || 0)} /></div>
+      <div className="stat-box"><div className="stat-box-label">Speed</div>
+        <NumberInput className="stat-box-input" value={c.speed} onChange={v => set("speed", v)} min={0} defaultValue={30} />
+      </div>
     </div>
     <div className="section-title">Death Saves</div>
     <div className="card">
@@ -893,7 +1299,7 @@ function EquipmentTab({ c, set }) {
         {["cp","sp","ep","gp","pp"].map(coin => (
           <div className="currency-item" key={coin}>
             <div className="currency-label">{coin.toUpperCase()}</div>
-            <input className="currency-input" type="number" value={c.currency[coin]} onChange={e => set("currency", { ...c.currency, [coin]: Number(e.target.value) || 0 })} />
+            <NumberInput className="currency-input" value={c.currency[coin]} onChange={v => set("currency", { ...c.currency, [coin]: v })} min={0} defaultValue={0} />
           </div>
         ))}
       </div>
@@ -929,8 +1335,10 @@ function SpellsTab({ c, set }) {
     <div className="section-title">Spellcasting</div>
     <div className="card">
       <div className="row">
-        <div className="field-group"><label className="field-label">Ability</label><input className="field-input" value={c.spellcastingAbility} onChange={e => set("spellcastingAbility", e.target.value)} placeholder="e.g. CHA" /></div>
-        <div className="field-group"><label className="field-label">Save DC</label><input className="field-input" type="number" value={c.spellSaveDC} onChange={e => set("spellSaveDC", Number(e.target.value) || 0)} /></div>
+        <div className="field-group"><label className="field-label">Ability</label><input className="field-input" value={c.spellcastingAbility} onChange={e => set("spellcastingAbility", e.target.value)} placeholder="CHA" /></div>
+        <div className="field-group"><label className="field-label">Save DC</label>
+          <NumberInput className="field-input" value={c.spellSaveDC} onChange={v => set("spellSaveDC", v)} min={0} defaultValue={0} />
+        </div>
         <div className="field-group"><label className="field-label">Atk +</label><input className="field-input" value={c.spellAttackBonus} onChange={e => set("spellAttackBonus", e.target.value)} placeholder="+5" /></div>
       </div>
     </div>
@@ -942,8 +1350,7 @@ function SpellsTab({ c, set }) {
           <div className="spell-slot-row" key={lvl}>
             <span className="spell-slot-label">Lvl {lvl}</span>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <input className="ability-score-input" type="number" value={slot.max} min="0" max="9" style={{ width: 40 }}
-                onChange={e => set("spellSlots", { ...c.spellSlots, [lvl]: { ...slot, max: Math.max(0, Number(e.target.value) || 0), used: Math.min(slot.used, Number(e.target.value) || 0) } })} />
+              <NumberInput className="ability-score-input" value={slot.max} onChange={v => set("spellSlots", { ...c.spellSlots, [lvl]: { max: v, used: Math.min(slot.used, v) } })} min={0} max={9} defaultValue={0} style={{ width: 40 }} />
             </div>
             <div className="slot-pips">{Array.from({ length: slot.max }).map((_, i) => <button key={i} className={`slot-pip ${i < slot.used ? "used" : ""}`} onClick={() => toggleSlot(lvl, i)} />)}</div>
           </div>
@@ -981,26 +1388,23 @@ function SpellsTab({ c, set }) {
   </>);
 }
 
-/* ─── Main App ───────────────────────────────── */
-
-function App() {
-  const [char, setChar] = useState(() => loadChar() || defaultChar());
+function CharacterSheet({ char, onUpdate, onBack }) {
   const [tab, setTab] = useState("overview");
   const [saveStatus, setSaveStatus] = useState("");
 
-  // Auto-save on every change
   useEffect(() => {
     const timer = setTimeout(() => {
-      saveChar(char);
+      onUpdate(char);
       setSaveStatus("Saved");
-      setTimeout(() => setSaveStatus(""), 1200);
-    }, 600);
+      const t = setTimeout(() => setSaveStatus(""), 1200);
+      return () => clearTimeout(t);
+    }, 500);
     return () => clearTimeout(timer);
   }, [char]);
 
   const set = useCallback((key, value) => {
-    setChar(prev => ({ ...prev, [key]: value }));
-  }, []);
+    onUpdate({ ...char, [key]: value });
+  }, [char, onUpdate]);
 
   const subtitle = [char.race, char.subrace].filter(Boolean).join(" ") +
     (char.className ? ` ${char.className}` : "") +
@@ -1008,14 +1412,15 @@ function App() {
     (char.level ? ` \u00B7 Level ${char.level}` : "");
 
   return (
-    <div className="app-root">
+    <>
       <div className="app-header">
-        <div className="app-title">
-          Grimoire
-          {saveStatus && <span style={{ color: "var(--green)", fontSize: 10, marginLeft: 8, letterSpacing: 0 }}>{saveStatus}</span>}
+        <button className="header-back" onClick={onBack} aria-label="Back to roster"><Icon.Back /></button>
+        <div className="header-center">
+          <div className="app-title">Grimoire{saveStatus && <span className="save-status">{saveStatus}</span>}</div>
+          {char.name && <div className="char-header-name">{char.name}</div>}
+          {subtitle.trim() && <div className="char-header-sub">{subtitle.trim()}</div>}
         </div>
-        {char.name && <div className="char-header-name">{char.name}</div>}
-        {subtitle.trim() && <div className="char-header-sub">{subtitle.trim()}</div>}
+        <div style={{ width: 36, flexShrink: 0 }} />
       </div>
       <div className="content-area">
         {tab === "overview" && <OverviewTab c={char} set={set} />}
@@ -1027,13 +1432,206 @@ function App() {
         {tab === "spells" && <SpellsTab c={char} set={set} />}
       </div>
       <div className="tab-bar">
-        {TABS.map(t => (
-          <button key={t.id} className={`tab-btn ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
-            <span className="tab-icon">{t.icon}</span>
-            <span>{t.label}</span>
-          </button>
-        ))}
+        {TABS.map(t => {
+          const IconComp = t.icon;
+          return (
+            <button key={t.id} className={`tab-btn ${tab === t.id ? "active" : ""}`} onClick={() => setTab(t.id)}>
+              <IconComp size={20} />
+              <span>{t.label}</span>
+            </button>
+          );
+        })}
       </div>
+    </>
+  );
+}
+
+function Roster({ characters, onOpen, onCreate, onRename, onDuplicate, onDelete, onExport, onImport }) {
+  const [confirm, setConfirm] = useState(null);
+  const [renaming, setRenaming] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleFile = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = JSON.parse(evt.target.result);
+        onImport(data);
+      } catch { alert("Could not read that file. Make sure it's a Grimoire export."); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  return (
+    <>
+      <div className="roster-bg" />
+      <div className="roster-wrap">
+        <div className="roster-title">Grimoire</div>
+        <div className="roster-flourish">
+          <div className="roster-flourish-line" />
+          <Icon.Flourish size={12} />
+          <div className="roster-flourish-line" />
+        </div>
+        <div className="roster-subtitle">A keeper of heroes and their tales</div>
+
+        <div className="roster-section-label">Your Characters</div>
+
+        {characters.length === 0 ? (
+          <div className="roster-empty">
+            No characters yet. Forge your first hero below.
+          </div>
+        ) : (
+          <div className="char-card-list">
+            {characters.map(c => {
+              const sub = [c.race, c.subrace].filter(Boolean).join(" ") + (c.className ? ` ${c.className}` : "") + (c.level ? `, Lvl ${c.level}` : "");
+              const sigil = (c.name || "?").trim().charAt(0).toUpperCase();
+              return (
+                <div className="char-card" key={c.id} onClick={() => onOpen(c.id)}>
+                  <div className="char-card-sigil">{sigil}</div>
+                  <div className="char-card-info">
+                    <div className="char-card-name">{c.name || "Unnamed Hero"}</div>
+                    <div className="char-card-sub">{sub.trim() || "Unknown wanderer"}</div>
+                  </div>
+                  <div className="char-card-actions" onClick={e => e.stopPropagation()}>
+                    <button className="icon-btn" onClick={() => setRenaming({ id: c.id, name: c.name })} aria-label="Rename"><Icon.Edit /></button>
+                    <button className="icon-btn" onClick={() => onDuplicate(c.id)} aria-label="Duplicate"><Icon.Copy /></button>
+                    <button className="icon-btn danger" onClick={() => setConfirm({ id: c.id, name: c.name || "Unnamed Hero" })} aria-label="Delete"><Icon.Trash /></button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="roster-actions">
+          <button className="action-btn" onClick={onCreate}>
+            <Icon.Plus size={18} /> Create New Character
+          </button>
+          <button className="action-btn secondary" onClick={() => fileInputRef.current && fileInputRef.current.click()}>
+            Import from File
+          </button>
+          {characters.length > 0 && (
+            <button className="action-btn secondary" onClick={onExport}>
+              Export All Characters
+            </button>
+          )}
+          <input ref={fileInputRef} type="file" accept="application/json,.json" style={{ display: "none" }} onChange={handleFile} />
+        </div>
+      </div>
+
+      {confirm && (
+        <ConfirmModal
+          title="Delete Character"
+          body={`Permanently delete "${confirm.name}"? This cannot be undone.`}
+          confirmLabel="Delete"
+          danger
+          onConfirm={() => onDelete(confirm.id)}
+          onClose={() => setConfirm(null)}
+        />
+      )}
+      {renaming && (
+        <RenameModal
+          initial={renaming.name}
+          onSave={(newName) => onRename(renaming.id, newName)}
+          onClose={() => setRenaming(null)}
+        />
+      )}
+    </>
+  );
+}
+
+function App() {
+  const [roster, setRoster] = useState(() => loadRoster());
+  const [activeId, setActiveId] = useState(null);
+
+  useEffect(() => { saveRoster(roster); }, [roster]);
+
+  const updateCharacter = useCallback((updated) => {
+    setRoster(prev => ({
+      ...prev,
+      characters: prev.characters.map(c => c.id === updated.id ? updated : c),
+    }));
+  }, []);
+
+  const createCharacter = () => {
+    const fresh = defaultChar();
+    setRoster(prev => ({ ...prev, characters: [...prev.characters, fresh] }));
+    setActiveId(fresh.id);
+  };
+
+  const deleteCharacter = (id) => {
+    setRoster(prev => ({ ...prev, characters: prev.characters.filter(c => c.id !== id) }));
+  };
+
+  const renameCharacter = (id, name) => {
+    setRoster(prev => ({
+      ...prev,
+      characters: prev.characters.map(c => c.id === id ? { ...c, name } : c),
+    }));
+  };
+
+  const duplicateCharacter = (id) => {
+    setRoster(prev => {
+      const orig = prev.characters.find(c => c.id === id);
+      if (!orig) return prev;
+      const copy = { ...JSON.parse(JSON.stringify(orig)), id: newId(), name: `${orig.name || "Unnamed"} (Copy)`, createdAt: Date.now() };
+      return { ...prev, characters: [...prev.characters, copy] };
+    });
+  };
+
+  const exportAll = () => {
+    const blob = new Blob([JSON.stringify(roster, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `grimoire-characters-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const importData = (data) => {
+    try {
+      let toImport = [];
+      if (Array.isArray(data && data.characters)) toImport = data.characters;
+      else if (Array.isArray(data)) toImport = data;
+      else if (data && data.id && data.abilities) toImport = [data];
+      else { alert("Unrecognized file format."); return; }
+
+      const sanitized = toImport.map(c => ({ ...defaultChar(), ...c, id: newId(), createdAt: Date.now() }));
+      setRoster(prev => ({ ...prev, characters: [...prev.characters, ...sanitized] }));
+      alert(`Imported ${sanitized.length} character${sanitized.length === 1 ? "" : "s"}.`);
+    } catch (e) {
+      alert("Import failed: " + e.message);
+    }
+  };
+
+  const activeChar = activeId ? roster.characters.find(c => c.id === activeId) : null;
+
+  return (
+    <div className="app-root">
+      {activeChar ? (
+        <CharacterSheet
+          char={activeChar}
+          onUpdate={updateCharacter}
+          onBack={() => setActiveId(null)}
+        />
+      ) : (
+        <Roster
+          characters={roster.characters}
+          onOpen={setActiveId}
+          onCreate={createCharacter}
+          onRename={renameCharacter}
+          onDuplicate={duplicateCharacter}
+          onDelete={deleteCharacter}
+          onExport={exportAll}
+          onImport={importData}
+        />
+      )}
     </div>
   );
 }
@@ -1042,7 +1640,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
 
 <script>
-// Register PWA manifest dynamically (keeps everything in one file)
 const manifest = {
   name: "Grimoire — D&D Character Sheet",
   short_name: "Grimoire",
@@ -1051,7 +1648,7 @@ const manifest = {
   background_color: "#141110",
   theme_color: "#141110",
   icons: [{
-    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23141110'/%3E%3Ctext x='256' y='300' text-anchor='middle' font-family='serif' font-size='240' fill='%23c9a84c'%3EG%3C/text%3E%3Crect x='60' y='390' width='392' height='4' fill='%233a332c'/%3E%3C/svg%3E",
+    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23141110'/%3E%3Ctext x='256' y='320' text-anchor='middle' font-family='serif' font-size='260' fill='%23c9a84c'%3EG%3C/text%3E%3Crect x='80' y='400' width='352' height='4' fill='%233a332c'/%3E%3C/svg%3E",
     sizes: "512x512",
     type: "image/svg+xml",
     purpose: "any"
